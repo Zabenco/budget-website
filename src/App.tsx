@@ -27,18 +27,22 @@ function App() {
       <h1 className="text-3xl font-bold mb-6 text-center">Personal Budget Tracker</h1>
       <div className="max-w-4xl mx-auto grid gap-6">
         <div className="flex flex-col md:flex-row items-center justify-between mb-4">
-          <Auth />
-          <div className="flex items-center gap-2 mt-2 md:mt-0">
-            <label htmlFor="groupId" className="font-semibold">Group ID:</label>
-            <input
-              id="groupId"
-              type="text"
-              className="border p-2 rounded"
-              value={groupId}
-              onChange={e => setGroupId(e.target.value)}
-              placeholder="Enter group ID"
-              style={{ minWidth: '120px' }}
-            />
+          <div className="flex items-center gap-2">
+            <Auth />
+            {isAuthenticated && (
+              <div className="flex items-center gap-2 ml-4">
+                <label htmlFor="groupId" className="font-semibold">Group ID:</label>
+                <input
+                  id="groupId"
+                  type="text"
+                  className="border p-2 rounded"
+                  value={groupId}
+                  onChange={e => setGroupId(e.target.value)}
+                  placeholder="Enter group ID"
+                  style={{ minWidth: '120px' }}
+                />
+              </div>
+            )}
           </div>
         </div>
         <ExpensesTable user={user} expenses={expenses} setExpenses={setExpenses} groupId={groupId} />
