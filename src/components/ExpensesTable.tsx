@@ -1,5 +1,14 @@
 import React, { useState, useMemo } from 'react';
+import { useEffect } from 'react';
 import type { User } from 'firebase/auth';
+import {
+  fetchExpenses,
+  addExpense,
+  removeExpense,
+  fetchSavingsGoal,
+  setSavingsGoal,
+  removeSavingsGoal,
+} from '../utils/firestoreBudget';
 import { Doughnut } from 'react-chartjs-2';
 
 export type Expense = {
@@ -39,22 +48,19 @@ interface ExpensesTableProps {
   setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
 }
 
-const SavingsGoalSection: React.FC<{
+// Firestore-powered savings goal display
+const SavingsGoalDisplay: React.FC<{
+  goal: { name: string; target: number };
   expenses: Expense[];
-}> = ({ expenses }) => {
-  const [goal, setGoal] = useState<{ name: string; target: number } | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ name: '', target: '' });
-
-  // Calculate total saved (income minus expenses)
+  onEdit: () => void;
+  onDelete: () => void;
+}> = ({ goal, expenses, onEdit, onDelete }) => {
   const saved = useMemo(() => {
     const totalIn = expenses.filter(e => e.type === 'income').reduce((a, b) => a + b.amount, 0);
     const totalOut = expenses.filter(e => e.type === 'expense').reduce((a, b) => a + b.amount, 0);
     return totalIn - totalOut;
   }, [expenses]);
-
   const percent = goal ? Math.min(100, Math.round((saved / goal.target) * 100)) : 0;
-
   const chartData = {
     labels: ['Saved', 'Remaining'],
     datasets: [
@@ -65,66 +71,21 @@ const SavingsGoalSection: React.FC<{
       },
     ],
   };
-
   return (
-    <div className="mt-8 p-4 bg-white rounded shadow">
-      <h2 className="text-xl font-bold mb-4 text-center">Savings Goal</h2>
-      {!goal && !editing && (
-        <div className="flex justify-center">
-          <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => setEditing(true)}>
-            Create a Savings Goal
-          </button>
+    <div className="flex flex-col md:flex-row items-center gap-6 mt-4 justify-center">
+      <div className="w-32 h-32 relative flex items-center justify-center">
+        <Doughnut data={chartData} options={{ cutout: '70%', plugins: { legend: { display: false } } }} />
+        <div className="absolute w-32 h-32 top-0 left-0 flex items-center justify-center pointer-events-none">
+          <span className="text-xl font-bold">{percent}%</span>
         </div>
-      )}
-      {editing && (
-        <div className="flex justify-center">
-          <form className="flex flex-col gap-2 md:max-w-md w-full items-center" onSubmit={e => {
-            e.preventDefault();
-            if (!form.name || !form.target || isNaN(Number(form.target)) || Number(form.target) <= 0) return;
-            setGoal({ name: form.name, target: Number(form.target) });
-            setEditing(false);
-          }}>
-            <input
-              name="name"
-              type="text"
-              className="border p-2 rounded w-full max-w-xs"
-              placeholder="Goal Name"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              required
-            />
-            <input
-              name="target"
-              type="number"
-              step="0.01"
-              className="border p-2 rounded w-full max-w-xs"
-              placeholder="Target Amount ($)"
-              value={form.target}
-              onChange={e => setForm(f => ({ ...f, target: e.target.value }))}
-              required
-            />
-            <button className="bg-green-500 text-white px-4 py-2 rounded w-full max-w-xs" type="submit">Save Goal</button>
-            <button className="text-gray-500 mt-2 w-full max-w-xs" type="button" onClick={() => setEditing(false)}>Cancel</button>
-          </form>
-        </div>
-      )}
-      {goal && !editing && (
-        <div className="flex flex-col md:flex-row items-center gap-6 mt-4 justify-center">
-          <div className="w-32 h-32 relative flex items-center justify-center">
-            <Doughnut data={chartData} options={{ cutout: '70%', plugins: { legend: { display: false } } }} />
-            <div className="absolute w-32 h-32 top-0 left-0 flex items-center justify-center pointer-events-none">
-              <span className="text-xl font-bold">{percent}%</span>
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold mb-1">{goal.name}</div>
-            <div className="mb-1">You have saved <span className="font-bold text-green-600">${Math.max(0, Math.min(saved, goal.target)).toFixed(2)}</span> / <span className="font-bold">${goal.target.toFixed(2)}</span></div>
-            <div className="mb-1">You're <span className="font-bold text-blue-600">{percent}%</span> of the way through.</div>
-            <button className="text-blue-500 mt-2" onClick={() => setEditing(true)}>Edit Goal</button>
-            <button className="text-red-500 ml-4" onClick={() => setGoal(null)}>Delete Goal</button>
-          </div>
-        </div>
-      )}
+      </div>
+      <div className="text-center">
+        <div className="text-lg font-bold mb-1">{goal.name}</div>
+        <div className="mb-1">You have saved <span className="font-bold text-green-600">${Math.max(0, Math.min(saved, goal.target)).toFixed(2)}</span> / <span className="font-bold">${goal.target.toFixed(2)}</span></div>
+        <div className="mb-1">You're <span className="font-bold text-blue-600">{percent}%</span> of the way through.</div>
+        <button className="text-blue-500 mt-2" onClick={onEdit}>Edit Goal</button>
+        <button className="text-red-500 ml-4" onClick={onDelete}>Delete Goal</button>
+      </div>
     </div>
   );
 };
@@ -132,10 +93,22 @@ const SavingsGoalSection: React.FC<{
 const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpenses }) => {
   const [form, setForm] = useState({ ...initialForm, person: user?.displayName ?? '' });
   const [optionsOpen, setOptionsOpen] = useState<string | null>(null);
+  // Savings goal state
+  const [goal, setGoal] = useState<{ name: string; target: number } | null>(null);
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalForm, setGoalForm] = useState({ name: '', target: '' });
 
-  React.useEffect(() => {
+  // Fetch expenses and savings goal from Firestore on user change
+  useEffect(() => {
+    if (user && user.uid) {
+      fetchExpenses(user.uid).then(setExpenses);
+      fetchSavingsGoal(user.uid).then(setGoal);
+    } else {
+      setExpenses([]);
+      setGoal(null);
+    }
     setForm(f => ({ ...f, person: user?.displayName ?? '' }));
-  }, [user]);
+  }, [user, setExpenses]);
 
   // If not logged in or no displayName, show prompt and hide everything else
   const isAuthenticated = !!user && !!user.displayName;
@@ -158,24 +131,25 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !form.date || !form.person || !form.company || !form.amount || !form.category) return;
-    setExpenses([
-      ...expenses,
-      {
-        id: Date.now().toString(),
-        date: form.date,
-        person: user.displayName ?? '',
-        company: form.company,
-        amount: Number(form.amount),
-        type: form.type as 'income' | 'expense',
-        category: form.category,
-        notes: form.notes,
-      },
-    ]);
-    setForm({ ...initialForm, person: user.displayName ?? '' });
+    const expenseData = {
+      date: form.date,
+      person: user.displayName ?? '',
+      company: form.company,
+      amount: Number(form.amount),
+      type: form.type as 'income' | 'expense',
+      category: form.category,
+      notes: form.notes,
+    };
+    addExpense(user.uid, expenseData).then(id => {
+      setExpenses(prev => [...prev, { ...expenseData, id }]);
+      setForm({ ...initialForm, person: user.displayName ?? '' });
+    });
   };
 
   const handleRemove = (id: string) => {
-    setExpenses(expenses.filter(e => e.id !== id));
+    removeExpense(id).then(() => {
+      setExpenses(expenses.filter(e => e.id !== id));
+    });
   };
 
   const handleOptions = (id: string) => {
@@ -244,9 +218,58 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
           </table>
         </div>
       </div>
-      {isAuthenticated && <SavingsGoalSection expenses={expenses} />}
-      {/* If you have a budget analyzer or graphs/dashboard, ensure those are only rendered here when isAuthenticated is true. */}
-      {/* Example: {isAuthenticated && <ChartsDashboard user={user} expenses={expenses} />} */}
+      {/* Savings Goal Section - Firestore integrated */}
+      {isAuthenticated && (
+        <div className="mt-8 p-4 bg-white rounded shadow">
+          <h2 className="text-xl font-bold mb-4 text-center">Savings Goal</h2>
+          {!goal && !editingGoal && (
+            <div className="flex justify-center">
+              <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => setEditingGoal(true)}>
+                Create a Savings Goal
+              </button>
+            </div>
+          )}
+          {editingGoal && (
+            <div className="flex justify-center">
+              <form className="flex flex-col gap-2 md:max-w-md w-full items-center" onSubmit={e => {
+                e.preventDefault();
+                if (!goalForm.name || !goalForm.target || isNaN(Number(goalForm.target)) || Number(goalForm.target) <= 0) return;
+                setSavingsGoal(user!.uid, { name: goalForm.name, target: Number(goalForm.target) }).then(() => {
+                  setGoal({ name: goalForm.name, target: Number(goalForm.target) });
+                  setEditingGoal(false);
+                });
+              }}>
+                <input
+                  name="name"
+                  type="text"
+                  className="border p-2 rounded w-full max-w-xs"
+                  placeholder="Goal Name"
+                  value={goalForm.name}
+                  onChange={e => setGoalForm(f => ({ ...f, name: e.target.value }))}
+                  required
+                />
+                <input
+                  name="target"
+                  type="number"
+                  step="0.01"
+                  className="border p-2 rounded w-full max-w-xs"
+                  placeholder="Target Amount ($)"
+                  value={goalForm.target}
+                  onChange={e => setGoalForm(f => ({ ...f, target: e.target.value }))}
+                  required
+                />
+                <button className="bg-green-500 text-white px-4 py-2 rounded w-full max-w-xs" type="submit">Save Goal</button>
+                <button className="text-gray-500 mt-2 w-full max-w-xs" type="button" onClick={() => setEditingGoal(false)}>Cancel</button>
+              </form>
+            </div>
+          )}
+          {goal && !editingGoal && (
+            <SavingsGoalDisplay goal={goal} expenses={expenses} onEdit={() => setEditingGoal(true)} onDelete={() => {
+              removeSavingsGoal(user!.uid).then(() => setGoal(null));
+            }} />
+          )}
+        </div>
+      )}
     </div>
   );
 };
