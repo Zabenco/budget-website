@@ -20,9 +20,15 @@ export async function fetchExpenses(userId: string): Promise<Expense[]> {
 }
 
 export async function addExpense(userId: string, expense: Omit<Expense, 'id'>): Promise<string> {
-  const expensesRef = collection(db, 'expenses');
-  const docRef = await addDoc(expensesRef, { ...expense, userId });
-  return docRef.id;
+  try {
+    const expensesRef = collection(db, 'expenses');
+    const docRef = await addDoc(expensesRef, { ...expense, userId });
+    console.log('Expense added:', docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error('Error adding expense:', error);
+    throw error;
+  }
 }
 
 export async function removeExpense(expenseId: string): Promise<void> {
@@ -43,9 +49,15 @@ export async function fetchSharedGoals(groupId: string): Promise<Array<{ id: str
 }
 
 export async function addSharedGoal(groupId: string, goal: { name: string; target: number }): Promise<string> {
-  const goalsRef = collection(db, 'goals');
-  const docRef = await addDoc(goalsRef, { ...goal, groupId });
-  return docRef.id;
+  try {
+    const goalsRef = collection(db, 'goals');
+    const docRef = await addDoc(goalsRef, { ...goal, groupId });
+    console.log('Shared goal added:', docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error('Error adding shared goal:', error);
+    throw error;
+  }
 }
 
 export async function removeSharedGoal(goalId: string): Promise<void> {
