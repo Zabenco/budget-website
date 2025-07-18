@@ -9,9 +9,6 @@ import {
   query,
   where,
   updateDoc,
-  setDoc,
-  getDoc,
-  Timestamp,
 } from 'firebase/firestore';
 import type { Expense } from '../components/ExpensesTable';
 

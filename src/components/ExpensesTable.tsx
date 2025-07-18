@@ -5,9 +5,10 @@ import {
   fetchExpenses,
   addExpense,
   removeExpense,
-  fetchSavingsGoal,
-  setSavingsGoal,
-  removeSavingsGoal,
+  fetchSharedGoals,
+  addSharedGoal,
+  removeSharedGoal,
+  updateSharedGoal,
 } from '../utils/firestoreBudget';
 import { Doughnut } from 'react-chartjs-2';
 
@@ -93,19 +94,22 @@ const SavingsGoalDisplay: React.FC<{
 const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpenses }) => {
   const [form, setForm] = useState({ ...initialForm, person: user?.displayName ?? '' });
   const [optionsOpen, setOptionsOpen] = useState<string | null>(null);
-  // Savings goal state
-  const [goal, setGoal] = useState<{ name: string; target: number } | null>(null);
+  // Shared goals state
+  const [goals, setGoals] = useState<Array<{ id: string; name: string; target: number }>>([]);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalForm, setGoalForm] = useState({ name: '', target: '' });
 
-  // Fetch expenses and savings goal from Firestore on user change
+  // Replace with your groupId logic (e.g., hardcoded, from user, or from custom claims)
+  const groupId = 'default-group';
+
+  // Fetch expenses and shared goals from Firestore on user change
   useEffect(() => {
     if (user && user.uid) {
       fetchExpenses(user.uid).then(setExpenses);
-      fetchSavingsGoal(user.uid).then(setGoal);
+      fetchSharedGoals(groupId).then(setGoals);
     } else {
       setExpenses([]);
-      setGoal(null);
+      setGoals([]);
     }
     setForm(f => ({ ...f, person: user?.displayName ?? '' }));
   }, [user, setExpenses]);
@@ -218,56 +222,65 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
           </table>
         </div>
       </div>
-      {/* Savings Goal Section - Firestore integrated */}
+      {/* Shared Savings Goals Section */}
       {isAuthenticated && (
         <div className="mt-8 p-4 bg-white rounded shadow">
-          <h2 className="text-xl font-bold mb-4 text-center">Savings Goal</h2>
-          {!goal && !editingGoal && (
-            <div className="flex justify-center">
-              <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => setEditingGoal(true)}>
-                Create a Savings Goal
-              </button>
-            </div>
-          )}
+          <h2 className="text-xl font-bold mb-4 text-center">Shared Savings Goals</h2>
+          <div className="mb-4">
+            <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => setEditingGoal(true)}>
+              Add Savings Goal
+            </button>
+          </div>
           {editingGoal && (
-            <div className="flex justify-center">
-              <form className="flex flex-col gap-2 md:max-w-md w-full items-center" onSubmit={e => {
-                e.preventDefault();
-                if (!goalForm.name || !goalForm.target || isNaN(Number(goalForm.target)) || Number(goalForm.target) <= 0) return;
-                setSavingsGoal(user!.uid, { name: goalForm.name, target: Number(goalForm.target) }).then(() => {
-                  setGoal({ name: goalForm.name, target: Number(goalForm.target) });
-                  setEditingGoal(false);
-                });
-              }}>
-                <input
-                  name="name"
-                  type="text"
-                  className="border p-2 rounded w-full max-w-xs"
-                  placeholder="Goal Name"
-                  value={goalForm.name}
-                  onChange={e => setGoalForm(f => ({ ...f, name: e.target.value }))}
-                  required
-                />
-                <input
-                  name="target"
-                  type="number"
-                  step="0.01"
-                  className="border p-2 rounded w-full max-w-xs"
-                  placeholder="Target Amount ($)"
-                  value={goalForm.target}
-                  onChange={e => setGoalForm(f => ({ ...f, target: e.target.value }))}
-                  required
-                />
-                <button className="bg-green-500 text-white px-4 py-2 rounded w-full max-w-xs" type="submit">Save Goal</button>
-                <button className="text-gray-500 mt-2 w-full max-w-xs" type="button" onClick={() => setEditingGoal(false)}>Cancel</button>
-              </form>
-            </div>
+            <form className="flex flex-col gap-2 md:max-w-md w-full items-center" onSubmit={e => {
+              e.preventDefault();
+              if (!goalForm.name || !goalForm.target || isNaN(Number(goalForm.target)) || Number(goalForm.target) <= 0) return;
+              addSharedGoal(groupId, { name: goalForm.name, target: Number(goalForm.target) }).then(id => {
+                setGoals(prev => [...prev, { id, name: goalForm.name, target: Number(goalForm.target) }]);
+                setEditingGoal(false);
+                setGoalForm({ name: '', target: '' });
+              });
+            }}>
+              <input
+                name="name"
+                type="text"
+                className="border p-2 rounded w-full max-w-xs"
+                placeholder="Goal Name"
+                value={goalForm.name}
+                onChange={e => setGoalForm(f => ({ ...f, name: e.target.value }))}
+                required
+              />
+              <input
+                name="target"
+                type="number"
+                step="0.01"
+                className="border p-2 rounded w-full max-w-xs"
+                placeholder="Target Amount ($)"
+                value={goalForm.target}
+                onChange={e => setGoalForm(f => ({ ...f, target: e.target.value }))}
+                required
+              />
+              <button className="bg-green-500 text-white px-4 py-2 rounded w-full max-w-xs" type="submit">Save Goal</button>
+              <button className="text-gray-500 mt-2 w-full max-w-xs" type="button" onClick={() => setEditingGoal(false)}>Cancel</button>
+            </form>
           )}
-          {goal && !editingGoal && (
-            <SavingsGoalDisplay goal={goal} expenses={expenses} onEdit={() => setEditingGoal(true)} onDelete={() => {
-              removeSavingsGoal(user!.uid).then(() => setGoal(null));
-            }} />
-          )}
+          <div className="mt-6">
+            {goals.length === 0 ? (
+              <div className="text-center text-gray-500">No shared goals yet.</div>
+            ) : (
+              goals.map(goal => (
+                <SavingsGoalDisplay
+                  key={goal.id}
+                  goal={goal}
+                  expenses={expenses}
+                  onEdit={() => {/* TODO: implement edit logic */}}
+                  onDelete={() => {
+                    removeSharedGoal(goal.id).then(() => setGoals(goals.filter(g => g.id !== goal.id)));
+                  }}
+                />
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>
