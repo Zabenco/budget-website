@@ -98,20 +98,36 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
   const [goals, setGoals] = useState<Array<{ id: string; name: string; target: number }>>([]);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalForm, setGoalForm] = useState({ name: '', target: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Replace with your groupId logic (e.g., hardcoded, from user, or from custom claims)
   const groupId = 'default-group';
 
   // Fetch expenses and shared goals from Firestore on user change
   useEffect(() => {
-    if (user && user.uid) {
-      fetchExpenses(user.uid).then(setExpenses);
-      fetchSharedGoals(groupId).then(setGoals);
-    } else {
-      setExpenses([]);
-      setGoals([]);
+    async function fetchData() {
+      if (user && user.uid) {
+        setLoading(true);
+        setError(null);
+        try {
+          const expensesData = await fetchExpenses(user.uid);
+          const goalsData = await fetchSharedGoals(groupId);
+          setExpenses(expensesData);
+          setGoals(goalsData);
+        } catch (err) {
+          setError('Failed to load data from Firestore.');
+          console.error('Firestore fetch error:', err);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setExpenses([]);
+        setGoals([]);
+      }
+      setForm(f => ({ ...f, person: user?.displayName ?? '' }));
     }
-    setForm(f => ({ ...f, person: user?.displayName ?? '' }));
+    fetchData();
   }, [user, setExpenses]);
 
   // If not logged in or no displayName, show prompt and hide everything else
@@ -123,6 +139,27 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
           <h2 className="text-2xl font-bold mb-4">Welcome to the Budget Tracker</h2>
           <p className="mb-4">Please log in and set your display name to access your budget, expenses, savings goals, analytics, and graphs.</p>
           <p className="text-gray-500">(You can set your display name after registering or in your account settings.)</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="bg-white rounded shadow p-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">Loading data from Firestore...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="bg-white rounded shadow p-8 text-center">
+          <h2 className="text-2xl font-bold mb-4 text-red-600">{error}</h2>
+          <p className="text-gray-500">Check your Firestore rules and network connection.</p>
         </div>
       </div>
     );
