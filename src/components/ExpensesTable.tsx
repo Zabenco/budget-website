@@ -159,7 +159,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="bg-white rounded shadow p-8 text-center">
+        <div className="bg-[#23272a] rounded shadow p-8 text-center">
           <h2 className="text-2xl font-bold mb-4 text-red-600">{error}</h2>
           <p className="text-gray-500">Check your Firestore rules and network connection.</p>
         </div>
@@ -201,11 +201,11 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
 
   return (
     <div>
-      <div className="p-4 bg-white rounded shadow">
+      <div className="p-4 bg-[#23272a] rounded shadow">
         <h2 className="text-xl font-bold mb-4">Income & Expenses</h2>
         <form className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4" onSubmit={handleAdd}>
           <input name="date" type="date" className="border p-2 rounded" value={form.date} onChange={handleChange} required />
-          <input name="person" type="text" className="border p-2 rounded bg-gray-100" placeholder="Person" value={form.person} readOnly required />
+          <input name="person" type="text" className="border p-2 rounded bg-[#2c3136] text-white" placeholder="Person" value={form.person} readOnly required />
           <input name="company" type="text" className="border p-2 rounded" placeholder="Company/Source" value={form.company} onChange={handleChange} required />
           <input name="amount" type="number" step="0.01" className="border p-2 rounded" placeholder="Amount" value={form.amount} onChange={handleChange} required />
           <select name="type" className="border p-2 rounded" value={form.type} onChange={handleChange}>
@@ -223,7 +223,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
         <div className="overflow-x-auto">
           <table className="min-w-full border text-sm">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-[#23272a]">
                 <th className="p-2 border">Date</th>
                 <th className="p-2 border">Person</th>
                 <th className="p-2 border">Company/Source</th>
@@ -238,7 +238,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
               {expenses.length === 0 ? (
                 <tr><td colSpan={8} className="text-center p-2">No entries yet.</td></tr>
               ) : expenses.map(e => (
-                <tr key={e.id} className={e.type === 'income' ? 'bg-green-50' : ''}>
+                <tr key={e.id} className={e.type === 'income' ? 'bg-[#2c3136]' : 'bg-[#23272a]'}>
                   <td className="p-2 border">{e.date}</td>
                   <td className="p-2 border">{e.person}</td>
                   <td className="p-2 border">{e.company}</td>
@@ -249,9 +249,9 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
                   <td className="p-2 border relative">
                     <button className="text-blue-500" onClick={() => handleOptions(e.id)}>Options</button>
                     {optionsOpen === e.id && (
-                      <div className="absolute right-0 mt-2 bg-white border rounded shadow z-10 flex flex-col">
-                        <button className="px-4 py-2 hover:bg-gray-100 text-left" onClick={() => {/* TODO: Edit logic */ setOptionsOpen(null);}}>Edit</button>
-                        <button className="px-4 py-2 hover:bg-gray-100 text-left text-red-500" onClick={() => { handleRemove(e.id); setOptionsOpen(null); }}>Remove</button>
+                      <div className="absolute right-0 mt-2 bg-[#23272a] border rounded shadow z-10 flex flex-col">
+                        <button className="px-4 py-2 hover:bg-[#2c3136] text-left text-white" onClick={() => {/* TODO: Edit logic */ setOptionsOpen(null);}}>Edit</button>
+                        <button className="px-4 py-2 hover:bg-[#2c3136] text-left text-red-400" onClick={() => { handleRemove(e.id); setOptionsOpen(null); }}>Remove</button>
                       </div>
                     )}
                   </td>
@@ -263,7 +263,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
       </div>
       {/* Shared Savings Goals Section */}
       {isAuthenticated && (
-        <div className="mt-8 p-4 bg-white rounded shadow">
+        <div className="mt-8 p-4 bg-[#23272a] rounded shadow">
           <h2 className="text-xl font-bold mb-4 text-center">Shared Savings Goals</h2>
           <div className="mb-4">
             <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => setEditingGoal(true)}>

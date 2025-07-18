@@ -63,7 +63,7 @@ const Auth: React.FC = () => {
             onChange={e => setDisplayName(e.target.value)}
             required
           />
-          <button className="bg-blue-500 text-white px-4 py-2 rounded" type="submit">
+          <button className="bg-blue-600 text-white px-4 py-2 rounded" type="submit">
             Save Name
           </button>
         </form>
@@ -75,7 +75,7 @@ const Auth: React.FC = () => {
     return (
       <div className="p-4 bg-[#2c3136] rounded shadow flex flex-col gap-2">
         <span className="text-green-600">Hello, {user.displayName || user.email}</span>
-        <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={handleSignOut}>Sign Out</button>
+        <button className="bg-red-600 text-white px-4 py-2 rounded" onClick={handleSignOut}>Sign Out</button>
       </div>
     );
   }
@@ -101,7 +101,7 @@ const Auth: React.FC = () => {
           required
         />
         {error && <span className="text-red-500">{error}</span>}
-        <button className="bg-blue-500 text-white px-4 py-2 rounded" type="submit">
+        <button className="bg-blue-600 text-white px-4 py-2 rounded" type="submit">
           {isRegister ? 'Register' : 'Sign In'}
         </button>
       </form>

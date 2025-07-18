@@ -106,20 +106,20 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
   return (
     <div className="p-4 bg-[#2c3136] rounded shadow">
       <div className="flex flex-wrap gap-4 mb-4 justify-center">
-        <div className="bg-green-100 text-green-800 rounded p-4 min-w-[140px] text-center">
+        <div className="bg-[#23272a] text-green-400 rounded p-4 min-w-[140px] text-center">
           <div className="text-xs">Total In</div>
           <div className="text-2xl font-bold">${totalIn.toFixed(2)}</div>
         </div>
-        <div className="bg-red-100 text-red-800 rounded p-4 min-w-[140px] text-center">
+        <div className="bg-[#23272a] text-red-400 rounded p-4 min-w-[140px] text-center">
           <div className="text-xs">Total Out</div>
           <div className="text-2xl font-bold">${totalOut.toFixed(2)}</div>
         </div>
-        <div className="bg-blue-100 text-blue-800 rounded p-4 min-w-[140px] text-center">
+        <div className="bg-[#23272a] text-blue-400 rounded p-4 min-w-[140px] text-center">
           <div className="text-xs">Net</div>
           <div className="text-2xl font-bold">${net.toFixed(2)}</div>
         </div>
         {perPerson.map(p => (
-          <div key={p.name} className="bg-gray-100 text-gray-800 rounded p-4 min-w-[140px] text-center">
+          <div key={p.name} className="bg-[#23272a] text-gray-200 rounded p-4 min-w-[140px] text-center">
             <div className="text-xs">{p.name}</div>
             <div className="text-sm">Spent: <span className="font-bold text-red-600">${p.spent.toFixed(2)}</span></div>
             <div className="text-sm">Saved: <span className="font-bold text-green-600">${p.saved.toFixed(2)}</span></div>
@@ -130,7 +130,7 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
         {timeFrames.map(tf => (
           <button
             key={tf.value}
-            className={`px-4 py-2 rounded ${timeFrame === tf.value ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
+            className={`px-4 py-2 rounded ${timeFrame === tf.value ? 'bg-blue-600 text-white' : 'bg-[#23272a] text-gray-200'}`}
             onClick={() => setTimeFrame(tf.value)}
           >
             {tf.label}
@@ -142,15 +142,15 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
           <h3 className="font-bold mb-2">Money In/Out Over Time</h3>
           <Line data={inOutData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </div>
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-[#23272a] p-4 rounded shadow">
           <h3 className="font-bold mb-2">Spending by Category</h3>
           <Doughnut data={categoryData} options={{ responsive: true, plugins: { legend: { position: 'right' } } }} />
         </div>
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-[#23272a] p-4 rounded shadow">
           <h3 className="font-bold mb-2">Who Spends/Saves Most</h3>
           <Bar data={perPersonData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </div>
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-[#23272a] p-4 rounded shadow">
           <h3 className="font-bold mb-2">Income Per Month</h3>
           <Bar data={incomeMonthData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </div>
