@@ -37,17 +37,24 @@ export async function updateExpense(expenseId: string, updates: Partial<Expense>
 }
 
 // Savings Goal
-export async function fetchSavingsGoal(userId: string): Promise<{ name: string; target: number } | null> {
-  const goalRef = doc(db, 'savingsGoals', userId);
-  const goalSnap = await getDoc(goalRef);
-  if (!goalSnap.exists()) return null;
-  return goalSnap.data() as { name: string; target: number };
+// Shared savings goals
+export async function fetchSharedGoals(groupId: string): Promise<Array<{ id: string; name: string; target: number }>> {
+  const goalsRef = collection(db, 'goals');
+  const q = query(goalsRef, where('groupId', '==', groupId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as { id: string; name: string; target: number }));
 }
 
-export async function setSavingsGoal(userId: string, goal: { name: string; target: number }): Promise<void> {
-  await setDoc(doc(db, 'savingsGoals', userId), goal);
+export async function addSharedGoal(groupId: string, goal: { name: string; target: number }): Promise<string> {
+  const goalsRef = collection(db, 'goals');
+  const docRef = await addDoc(goalsRef, { ...goal, groupId });
+  return docRef.id;
 }
 
-export async function removeSavingsGoal(userId: string): Promise<void> {
-  await deleteDoc(doc(db, 'savingsGoals', userId));
+export async function removeSharedGoal(goalId: string): Promise<void> {
+  await deleteDoc(doc(db, 'goals', goalId));
+}
+
+export async function updateSharedGoal(goalId: string, updates: Partial<{ name: string; target: number }>): Promise<void> {
+  await updateDoc(doc(db, 'goals', goalId), updates);
 }
