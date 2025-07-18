@@ -67,7 +67,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-4 text-white">
+    <div className="min-h-screen bg-[#23272a] p-4 text-white">
       <h1 className="text-3xl font-bold mb-6 text-center">Personal Budget Tracker</h1>
       <div className="max-w-4xl mx-auto grid gap-6">
         <div className="flex flex-col md:flex-row items-center justify-between mb-4">
@@ -79,14 +79,14 @@ function App() {
                 <input
                   id="groupId"
                   type="text"
-                  className="border p-2 rounded bg-gray-800 text-white"
+                  className="border p-2 rounded bg-[#2c3136] text-white"
                   value={groupIdInput}
                   onChange={e => setGroupIdInput(e.target.value)}
                   placeholder="Enter group ID"
                   style={{ minWidth: '120px' }}
                 />
                 <button
-                  className="bg-blue-600 text-white px-3 py-2 rounded"
+                  className="bg-[#44484c] text-white px-3 py-2 rounded"
                   onClick={handleSetGroupId}
                   type="button"
                 >Set Group ID</button>
@@ -95,16 +95,16 @@ function App() {
             )}
           </div>
         </div>
-        <div className="bg-gray-800 rounded shadow p-4">
+        <div className="bg-[#2c3136] rounded shadow p-4">
           <ExpensesTable user={user} expenses={expenses} setExpenses={setExpenses} groupId={groupId} />
         </div>
         {isAuthenticated && (
-          <div className="bg-gray-800 rounded shadow p-4">
+          <div className="bg-[#2c3136] rounded shadow p-4">
             <BudgetAnalyzer />
           </div>
         )}
         {isAuthenticated && (
-          <div className="bg-gray-800 rounded shadow p-4">
+          <div className="bg-[#2c3136] rounded shadow p-4">
             <ChartsDashboard expenses={expenses} />
           </div>
         )}
