@@ -100,7 +100,7 @@ function App() {
         </div>
         {isAuthenticated && (
           <div className="bg-[#2c3136] rounded shadow p-4">
-            <BudgetAnalyzer />
+            <BudgetAnalyzer groupId={groupId} />
           </div>
         )}
         {isAuthenticated && (
