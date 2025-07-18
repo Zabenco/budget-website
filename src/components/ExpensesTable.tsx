@@ -9,7 +9,6 @@ import {
   addSharedGoal,
   removeSharedGoal,
   updateSharedGoal,
-  BUDGET_CATEGORIES,
 } from '../utils/firestoreBudget';
 import { Doughnut } from 'react-chartjs-2';
 
@@ -40,7 +39,20 @@ const initialForm = {
   notes: '',
 };
 
-const categories = BUDGET_CATEGORIES;
+const expenseCategories = [
+  'Housing',
+  'Utilities',
+  'Healthcare',
+  'Transportation',
+  'Education',
+  'Debt Payments',
+  'Personal Care',
+  'Food',
+  'Entertainment',
+  'Miscellaneous',
+  'Insurance',
+];
+const incomeCategories = ['Salary'];
 
 interface ExpensesTableProps {
   user?: User | null;
@@ -213,7 +225,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
           </select>
           <select name="category" className="border p-2 rounded" value={form.category} onChange={handleChange} required>
             <option value="">Category</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            {(form.type === 'income' ? incomeCategories : expenseCategories).map((c: string) => <option key={c} value={c}>{c}</option>)}
           </select>
           <textarea name="notes" className="border p-2 rounded md:col-span-3" placeholder="Notes" value={form.notes} onChange={handleChange} />
           <button className="bg-blue-500 text-white px-4 py-2 rounded md:col-span-3" type="submit" disabled={!user}>Add Entry</button>
