@@ -12,17 +12,17 @@ import {
 } from 'firebase/firestore';
 import type { Expense } from '../components/ExpensesTable';
 
-export async function fetchExpenses(userId: string): Promise<Expense[]> {
+export async function fetchExpenses(groupId: string): Promise<Expense[]> {
   const expensesRef = collection(db, 'expenses');
-  const q = query(expensesRef, where('groupId', '==', userId)); // userId will be groupId now
+  const q = query(expensesRef, where('groupId', '==', groupId));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
 }
 
-export async function addExpense(userId: string, expense: Omit<Expense, 'id'>): Promise<string> {
+export async function addExpense(groupId: string, expense: Omit<Expense, 'id' | 'groupId'>): Promise<string> {
   try {
     const expensesRef = collection(db, 'expenses');
-    const docRef = await addDoc(expensesRef, { ...expense, groupId: userId }); // userId will be groupId now
+    const docRef = await addDoc(expensesRef, { ...expense, groupId });
     console.log('Expense added:', docRef.id);
     return docRef.id;
   } catch (error) {
