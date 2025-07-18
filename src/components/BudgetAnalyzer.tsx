@@ -1,10 +1,37 @@
 
 import React, { useEffect, useState } from 'react';
-import { createGroupBudget, fetchGroupBudget, updateGroupBudget, listGroupBudgets, fetchExpenses, BUDGET_CATEGORIES } from '../utils/firestoreBudget';
+import { createGroupBudget, fetchGroupBudget, updateGroupBudget, listGroupBudgets, fetchExpenses } from '../utils/firestoreBudget';
 import type { GroupBudget, BudgetCategory } from '../utils/firestoreBudget';
 
-const categoryLabels: { [key: string]: string } = {};
-BUDGET_CATEGORIES.forEach(cat => { categoryLabels[cat] = cat; });
+const categoryLabels: { [key: string]: string } = {
+  housing: 'Housing',
+  utilities: 'Utilities',
+  healthcare: 'Healthcare',
+  transportation: 'Transportation',
+  education: 'Education',
+  debtPayments: 'Debt Payments',
+  personalCare: 'Personal Care',
+  food: 'Food',
+  entertainment: 'Entertainment',
+  miscellaneous: 'Miscellaneous',
+  insurance: 'Insurance',
+  salary: 'Salary',
+};
+
+const CATEGORY_KEYS: (keyof BudgetCategory)[] = [
+  'housing',
+  'utilities',
+  'healthcare',
+  'transportation',
+  'education',
+  'debtPayments',
+  'personalCare',
+  'food',
+  'entertainment',
+  'miscellaneous',
+  'insurance',
+  'salary',
+];
 
 function getCurrentMonthYear() {
   const now = new Date();
@@ -48,18 +75,17 @@ const BudgetAnalyzer: React.FC<{ groupId?: string }> = ({ groupId }) => {
     // Ensure all categories are numbers
     const fullCategories: BudgetCategory = {
       housing: Number(form.categories.housing ?? 0),
-      food: Number(form.categories.food ?? 0),
       utilities: Number(form.categories.utilities ?? 0),
-      entertainment: Number(form.categories.entertainment ?? 0),
       healthcare: Number(form.categories.healthcare ?? 0),
-      miscellaneous: Number(form.categories.miscellaneous ?? 0),
       transportation: Number(form.categories.transportation ?? 0),
-      insurance: Number(form.categories.insurance ?? 0),
       education: Number(form.categories.education ?? 0),
-      childcare: Number(form.categories.childcare ?? 0),
-      debt: Number(form.categories.debt ?? 0),
-      savings: Number(form.categories.savings ?? 0),
-      personal: Number(form.categories.personal ?? 0),
+      debtPayments: Number(form.categories.debtPayments ?? 0),
+      personalCare: Number(form.categories.personalCare ?? 0),
+      food: Number(form.categories.food ?? 0),
+      entertainment: Number(form.categories.entertainment ?? 0),
+      miscellaneous: Number(form.categories.miscellaneous ?? 0),
+      insurance: Number(form.categories.insurance ?? 0),
+      salary: Number(form.categories.salary ?? 0),
     };
     if (budget) {
       await updateGroupBudget(budget.id!, {
@@ -79,14 +105,30 @@ const BudgetAnalyzer: React.FC<{ groupId?: string }> = ({ groupId }) => {
   const actuals: Partial<BudgetCategory> = {};
   let actualIncome = 0;
   let actualExpenses = 0;
+  // Map display category names to BudgetCategory keys
+  const categoryKeyMap: { [key: string]: keyof BudgetCategory } = {
+    'Housing': 'housing',
+    'Utilities': 'utilities',
+    'Healthcare': 'healthcare',
+    'Transportation': 'transportation',
+    'Education': 'education',
+    'Debt Payments': 'debtPayments',
+    'Personal Care': 'personalCare',
+    'Food': 'food',
+    'Entertainment': 'entertainment',
+    'Miscellaneous': 'miscellaneous',
+    'Insurance': 'insurance',
+    'Salary': 'salary',
+  };
+
   expenses.forEach(e => {
     if (e.type === 'income') {
       actualIncome += Number(e.amount);
     } else {
       actualExpenses += Number(e.amount);
-      const cat = String(e.category) as keyof BudgetCategory;
-      if (actuals[cat] !== undefined) actuals[cat]! += Number(e.amount);
-      else actuals[cat] = Number(e.amount);
+      const catKey = categoryKeyMap[e.category] ?? (e.category as keyof BudgetCategory);
+      if (actuals[catKey] !== undefined) actuals[catKey]! += Number(e.amount);
+      else actuals[catKey] = Number(e.amount);
     }
   });
   const actualSavings = actualIncome - actualExpenses;
@@ -136,14 +178,14 @@ const BudgetAnalyzer: React.FC<{ groupId?: string }> = ({ groupId }) => {
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.keys(categoryLabels).map(cat => (
+            {CATEGORY_KEYS.map(cat => (
               <div key={cat} className="flex items-center gap-2">
-                <label className="w-40">{categoryLabels[cat as keyof BudgetCategory]}:</label>
+                <label className="w-40">{categoryLabels[cat]}:</label>
                 <input
                   type="number"
                   name={cat}
                   className="border p-2 rounded bg-[#23272a] text-white"
-                  value={form.categories[cat as keyof BudgetCategory] ?? 0}
+                  value={form.categories[cat] ?? 0}
                   onChange={handleFormChange}
                   min={0}
                 />
@@ -163,11 +205,11 @@ const BudgetAnalyzer: React.FC<{ groupId?: string }> = ({ groupId }) => {
           <h3 className="text-lg font-bold mb-2">Budget for {month}/{year}</h3>
           <div className="mb-2 font-semibold">Expected Monthly Income: ${budget.expectedIncome}</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-            {Object.keys(categoryLabels).map(cat => (
+            {CATEGORY_KEYS.map(cat => (
               <div key={cat} className="flex items-center gap-2">
-                <span className="w-40">{categoryLabels[cat as keyof BudgetCategory]}:</span>
-                <span>${budget.categories[cat as keyof BudgetCategory]}</span>
-                <span className="text-gray-400 text-xs">Actual: ${actuals[cat as keyof BudgetCategory] ?? 0}</span>
+                <span className="w-40">{categoryLabels[cat]}:</span>
+                <span>${budget.categories[cat]}</span>
+                <span className="text-gray-400 text-xs">Actual: ${actuals[cat] ?? 0}</span>
               </div>
             ))}
           </div>
@@ -198,8 +240,8 @@ const BudgetAnalyzer: React.FC<{ groupId?: string }> = ({ groupId }) => {
                   <td className="p-2">${b.expectedIncome}</td>
                   <td className="p-2">${b.expectedSavings}</td>
                   <td className="p-2">
-                    {Object.keys(categoryLabels).map(cat => (
-                      <span key={cat} className="mr-2">{categoryLabels[cat as keyof BudgetCategory]}: ${b.categories[cat as keyof BudgetCategory]} </span>
+                    {CATEGORY_KEYS.map(cat => (
+                      <span key={cat} className="mr-2">{categoryLabels[cat]}: ${b.categories[cat]} </span>
                     ))}
                   </td>
                 </tr>

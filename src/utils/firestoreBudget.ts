@@ -1,23 +1,32 @@
 // Shared categories for both budget and expenses
 export const BUDGET_CATEGORIES = [
-  'Housing', 'Food', 'Utilities', 'Entertainment', 'Healthcare', 'Miscellaneous', 'Transportation', 'Insurance', 'Education', 'Childcare', 'Debt', 'Savings', 'Personal Care',
-  'Groceries', 'Dining', 'Bills', 'Rent', 'Salary', 'Gift', 'Shopping', 'Other'
+  'Housing',
+  'Utilities',
+  'Healthcare',
+  'Transportation',
+  'Education',
+  'Debt Payments',
+  'Personal Care',
+  'Food',
+  'Entertainment',
+  'Miscellaneous',
+  'Insurance',
+  'Salary', // income category
 ];
 // Budget CRUD for group
 export type BudgetCategory = {
   housing: number;
-  food: number;
   utilities: number;
-  entertainment: number;
   healthcare: number;
-  miscellaneous: number;
   transportation: number;
-  insurance: number;
   education: number;
-  childcare: number;
-  debt: number;
-  savings: number;
-  personal: number;
+  debtPayments: number;
+  personalCare: number;
+  food: number;
+  entertainment: number;
+  miscellaneous: number;
+  insurance: number;
+  salary: number;
 };
 
 export type GroupBudget = {
@@ -33,18 +42,17 @@ export type GroupBudget = {
 export async function createGroupBudget(groupId: string, month: number, year: number, expectedIncome: number, categories: Partial<BudgetCategory>): Promise<string> {
   const fullCategories: BudgetCategory = {
     housing: categories.housing ?? 0,
-    food: categories.food ?? 0,
     utilities: categories.utilities ?? 0,
-    entertainment: categories.entertainment ?? 0,
     healthcare: categories.healthcare ?? 0,
-    miscellaneous: categories.miscellaneous ?? 0,
     transportation: categories.transportation ?? 0,
-    insurance: categories.insurance ?? 0,
     education: categories.education ?? 0,
-    childcare: categories.childcare ?? 0,
-    debt: categories.debt ?? 0,
-    savings: categories.savings ?? 0,
-    personal: categories.personal ?? 0,
+    debtPayments: categories.debtPayments ?? 0,
+    personalCare: categories.personalCare ?? 0,
+    food: categories.food ?? 0,
+    entertainment: categories.entertainment ?? 0,
+    miscellaneous: categories.miscellaneous ?? 0,
+    insurance: categories.insurance ?? 0,
+    salary: categories.salary ?? 0,
   };
   const expectedSavings = expectedIncome - Object.values(fullCategories).reduce((a, b) => a + b, 0);
   const budgetsRef = collection(db, 'budgets');
