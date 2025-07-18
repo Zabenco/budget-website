@@ -52,7 +52,7 @@ const Auth: React.FC = () => {
 
   if (user && showNameForm) {
     return (
-      <div className="p-4 bg-white rounded shadow flex flex-col gap-2">
+      <div className="p-4 bg-[#2c3136] rounded shadow flex flex-col gap-2">
         <span className="text-green-600">Signed in as {user.email}</span>
         <form className="flex flex-col gap-2 mt-2" onSubmit={handleNameSubmit}>
           <input
@@ -73,7 +73,7 @@ const Auth: React.FC = () => {
 
   if (user) {
     return (
-      <div className="p-4 bg-white rounded shadow flex flex-col gap-2">
+      <div className="p-4 bg-[#2c3136] rounded shadow flex flex-col gap-2">
         <span className="text-green-600">Hello, {user.displayName || user.email}</span>
         <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={handleSignOut}>Sign Out</button>
       </div>
@@ -81,7 +81,7 @@ const Auth: React.FC = () => {
   }
 
   return (
-    <div className="p-4 bg-white rounded shadow">
+    <div className="p-4 bg-[#2c3136] rounded shadow">
       <h2 className="text-xl font-bold mb-4">{isRegister ? 'Register' : 'Sign In'}</h2>
       <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
         <input

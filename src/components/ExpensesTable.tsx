@@ -137,7 +137,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
   if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="bg-white rounded shadow p-8 text-center">
+        <div className="bg-[#2c3136] rounded shadow p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Welcome to the Budget Tracker</h2>
           <p className="mb-4">Please log in and set your display name to access your budget, expenses, savings goals, analytics, and graphs.</p>
           <p className="text-gray-500">(You can set your display name after registering or in your account settings.)</p>
@@ -149,7 +149,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="bg-white rounded shadow p-8 text-center">
+        <div className="bg-[#2c3136] rounded shadow p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Loading data from Firestore...</h2>
         </div>
       </div>

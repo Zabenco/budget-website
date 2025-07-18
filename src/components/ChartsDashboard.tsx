@@ -104,7 +104,7 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
   };
 
   return (
-    <div className="p-4 bg-white rounded shadow">
+    <div className="p-4 bg-[#2c3136] rounded shadow">
       <div className="flex flex-wrap gap-4 mb-4 justify-center">
         <div className="bg-green-100 text-green-800 rounded p-4 min-w-[140px] text-center">
           <div className="text-xs">Total In</div>
@@ -138,7 +138,7 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
         ))}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-4 rounded shadow">
+        <div className="bg-[#2c3136] p-4 rounded shadow">
           <h3 className="font-bold mb-2">Money In/Out Over Time</h3>
           <Line data={inOutData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </div>
