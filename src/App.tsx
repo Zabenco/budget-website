@@ -16,6 +16,7 @@ function App() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [groupId, setGroupId] = useState<string>('default-group');
   const [groupIdInput, setGroupIdInput] = useState<string>('');
+  const [refreshGroupId, setRefreshGroupId] = useState<number>(0);
   const isAuthenticated = !!user && !!user.displayName;
 
   useEffect(() => {
@@ -33,15 +34,24 @@ function App() {
             if (data.groupId) {
               setGroupId(data.groupId);
               setGroupIdInput(data.groupId);
+            } else {
+              setGroupId('default-group');
+              setGroupIdInput('');
             }
+          } else {
+            setGroupId('default-group');
+            setGroupIdInput('');
           }
         } catch (err) {
           console.error('Error reading groupId from Firestore:', err);
         }
+      } else {
+        setGroupId('default-group');
+        setGroupIdInput('');
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [refreshGroupId]);
 
   async function handleSetGroupId() {
     if (!user || !groupIdInput) return;
@@ -50,7 +60,7 @@ function App() {
       const db = getFirestore();
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, { groupId: groupIdInput }, { merge: true });
-      setGroupId(groupIdInput);
+      setRefreshGroupId(r => r + 1); // triggers re-read from Firestore for this user only
     } catch (err) {
       console.error('Error setting groupId in Firestore:', err);
     }
