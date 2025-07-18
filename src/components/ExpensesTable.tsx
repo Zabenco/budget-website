@@ -47,6 +47,7 @@ interface ExpensesTableProps {
   user?: User | null;
   expenses: Expense[];
   setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
+  groupId: string;
 }
 
 // Firestore-powered savings goal display
@@ -91,7 +92,7 @@ const SavingsGoalDisplay: React.FC<{
   );
 };
 
-const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpenses }) => {
+const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpenses, groupId }) => {
   const [form, setForm] = useState({ ...initialForm, person: user?.displayName ?? '' });
   const [optionsOpen, setOptionsOpen] = useState<string | null>(null);
   // Shared goals state
@@ -103,8 +104,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Replace with your groupId logic (e.g., hardcoded, from user, or from custom claims)
-  const groupId = 'default-group';
+  // groupId is now passed as a prop from App.tsx
 
   // Fetch expenses and shared goals from Firestore on user change
   useEffect(() => {

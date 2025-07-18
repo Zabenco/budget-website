@@ -14,7 +14,7 @@ import type { Expense } from '../components/ExpensesTable';
 
 export async function fetchExpenses(userId: string): Promise<Expense[]> {
   const expensesRef = collection(db, 'expenses');
-  const q = query(expensesRef, where('userId', '==', userId));
+  const q = query(expensesRef, where('groupId', '==', userId)); // userId will be groupId now
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
 }
@@ -22,7 +22,7 @@ export async function fetchExpenses(userId: string): Promise<Expense[]> {
 export async function addExpense(userId: string, expense: Omit<Expense, 'id'>): Promise<string> {
   try {
     const expensesRef = collection(db, 'expenses');
-    const docRef = await addDoc(expensesRef, { ...expense, userId });
+    const docRef = await addDoc(expensesRef, { ...expense, groupId: userId }); // userId will be groupId now
     console.log('Expense added:', docRef.id);
     return docRef.id;
   } catch (error) {
