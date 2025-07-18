@@ -40,7 +40,7 @@ const initialForm = {
 };
 
 const categories = [
-  'Groceries', 'Dining', 'Bills', 'Rent', 'Salary', 'Gift', 'Shopping', 'Entertainment', 'Other'
+  'Groceries', 'Dining', 'Bills', 'Rent', 'Salary', 'Gift', 'Shopping', 'Entertainment', 'Transportation', 'Insurance', 'Education', 'Childcare', 'Debt', 'Savings', 'Personal Care', 'Healthcare', 'Utilities', 'Miscellaneous', 'Other'
 ];
 
 interface ExpensesTableProps {
