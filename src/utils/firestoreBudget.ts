@@ -1,3 +1,78 @@
+// Budget CRUD for group
+export type BudgetCategory = {
+  housing: number;
+  food: number;
+  utilities: number;
+  entertainment: number;
+  healthcare: number;
+  miscellaneous: number;
+  transportation: number;
+  insurance: number;
+  education: number;
+  childcare: number;
+  debt: number;
+  savings: number;
+  personal: number;
+};
+
+export type GroupBudget = {
+  id?: string;
+  groupId: string;
+  month: number;
+  year: number;
+  expectedIncome: number;
+  categories: BudgetCategory;
+  expectedSavings: number;
+};
+
+export async function createGroupBudget(groupId: string, month: number, year: number, expectedIncome: number, categories: Partial<BudgetCategory>): Promise<string> {
+  const fullCategories: BudgetCategory = {
+    housing: categories.housing ?? 0,
+    food: categories.food ?? 0,
+    utilities: categories.utilities ?? 0,
+    entertainment: categories.entertainment ?? 0,
+    healthcare: categories.healthcare ?? 0,
+    miscellaneous: categories.miscellaneous ?? 0,
+    transportation: categories.transportation ?? 0,
+    insurance: categories.insurance ?? 0,
+    education: categories.education ?? 0,
+    childcare: categories.childcare ?? 0,
+    debt: categories.debt ?? 0,
+    savings: categories.savings ?? 0,
+    personal: categories.personal ?? 0,
+  };
+  const expectedSavings = expectedIncome - Object.values(fullCategories).reduce((a, b) => a + b, 0);
+  const budgetsRef = collection(db, 'budgets');
+  const docRef = await addDoc(budgetsRef, {
+    groupId,
+    month,
+    year,
+    expectedIncome,
+    categories: fullCategories,
+    expectedSavings,
+  });
+  return docRef.id;
+}
+
+export async function fetchGroupBudget(groupId: string, month: number, year: number): Promise<GroupBudget | null> {
+  const budgetsRef = collection(db, 'budgets');
+  const q = query(budgetsRef, where('groupId', '==', groupId), where('month', '==', month), where('year', '==', year));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  const docData = snapshot.docs[0].data();
+  return { id: snapshot.docs[0].id, ...docData } as GroupBudget;
+}
+
+export async function updateGroupBudget(budgetId: string, updates: Partial<GroupBudget>): Promise<void> {
+  await updateDoc(doc(db, 'budgets', budgetId), updates);
+}
+
+export async function listGroupBudgets(groupId: string): Promise<GroupBudget[]> {
+  const budgetsRef = collection(db, 'budgets');
+  const q = query(budgetsRef, where('groupId', '==', groupId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GroupBudget));
+}
 // src/utils/firestoreBudget.ts
 import { db } from '../firebase';
 import {
