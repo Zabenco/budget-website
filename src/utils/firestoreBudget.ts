@@ -1,3 +1,8 @@
+// Shared categories for both budget and expenses
+export const BUDGET_CATEGORIES = [
+  'Housing', 'Food', 'Utilities', 'Entertainment', 'Healthcare', 'Miscellaneous', 'Transportation', 'Insurance', 'Education', 'Childcare', 'Debt', 'Savings', 'Personal Care',
+  'Groceries', 'Dining', 'Bills', 'Rent', 'Salary', 'Gift', 'Shopping', 'Other'
+];
 // Budget CRUD for group
 export type BudgetCategory = {
   housing: number;

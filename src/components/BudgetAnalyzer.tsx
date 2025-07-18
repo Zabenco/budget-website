@@ -1,23 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { createGroupBudget, fetchGroupBudget, updateGroupBudget, listGroupBudgets, fetchExpenses } from '../utils/firestoreBudget';
+import { createGroupBudget, fetchGroupBudget, updateGroupBudget, listGroupBudgets, fetchExpenses, BUDGET_CATEGORIES } from '../utils/firestoreBudget';
 import type { GroupBudget, BudgetCategory } from '../utils/firestoreBudget';
 
-const categoryLabels: { [K in keyof BudgetCategory]: string } = {
-  housing: 'Housing',
-  food: 'Food',
-  utilities: 'Utilities',
-  entertainment: 'Entertainment',
-  healthcare: 'Healthcare',
-  miscellaneous: 'Miscellaneous',
-  transportation: 'Transportation',
-  insurance: 'Insurance',
-  education: 'Education',
-  childcare: 'Childcare',
-  debt: 'Debt Payments',
-  savings: 'Savings',
-  personal: 'Personal Care',
-};
+const categoryLabels: { [key: string]: string } = {};
+BUDGET_CATEGORIES.forEach(cat => { categoryLabels[cat] = cat; });
 
 function getCurrentMonthYear() {
   const now = new Date();

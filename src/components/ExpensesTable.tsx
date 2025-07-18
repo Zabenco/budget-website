@@ -9,6 +9,7 @@ import {
   addSharedGoal,
   removeSharedGoal,
   updateSharedGoal,
+  BUDGET_CATEGORIES,
 } from '../utils/firestoreBudget';
 import { Doughnut } from 'react-chartjs-2';
 
@@ -39,9 +40,7 @@ const initialForm = {
   notes: '',
 };
 
-const categories = [
-  'Groceries', 'Dining', 'Bills', 'Rent', 'Salary', 'Gift', 'Shopping', 'Entertainment', 'Transportation', 'Insurance', 'Education', 'Childcare', 'Debt', 'Savings', 'Personal Care', 'Healthcare', 'Utilities', 'Miscellaneous', 'Other'
-];
+const categories = BUDGET_CATEGORIES;
 
 interface ExpensesTableProps {
   user?: User | null;
