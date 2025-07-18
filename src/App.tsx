@@ -15,12 +15,46 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [groupId, setGroupId] = useState<string>('default-group');
+  const [groupIdInput, setGroupIdInput] = useState<string>('');
   const isAuthenticated = !!user && !!user.displayName;
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, setUser);
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      setUser(u);
+      if (u) {
+        // Try to read groupId from Firestore user profile
+        try {
+          const { getFirestore, doc, getDoc, setDoc } = await import('firebase/firestore');
+          const db = getFirestore();
+          const userDocRef = doc(db, 'users', u.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const data = userDocSnap.data();
+            if (data.groupId) {
+              setGroupId(data.groupId);
+              setGroupIdInput(data.groupId);
+            }
+          }
+        } catch (err) {
+          console.error('Error reading groupId from Firestore:', err);
+        }
+      }
+    });
     return () => unsubscribe();
   }, []);
+
+  async function handleSetGroupId() {
+    if (!user || !groupIdInput) return;
+    try {
+      const { getFirestore, doc, setDoc } = await import('firebase/firestore');
+      const db = getFirestore();
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, { groupId: groupIdInput }, { merge: true });
+      setGroupId(groupIdInput);
+    } catch (err) {
+      console.error('Error setting groupId in Firestore:', err);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
@@ -36,11 +70,17 @@ function App() {
                   id="groupId"
                   type="text"
                   className="border p-2 rounded"
-                  value={groupId}
-                  onChange={e => setGroupId(e.target.value)}
+                  value={groupIdInput}
+                  onChange={e => setGroupIdInput(e.target.value)}
                   placeholder="Enter group ID"
                   style={{ minWidth: '120px' }}
                 />
+                <button
+                  className="bg-blue-500 text-white px-3 py-2 rounded"
+                  onClick={handleSetGroupId}
+                  type="button"
+                >Set Group ID</button>
+                <span className="ml-2 text-gray-600 text-sm">Current: <span className="font-bold">{groupId}</span></span>
               </div>
             )}
           </div>
