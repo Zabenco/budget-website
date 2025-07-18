@@ -1,6 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { createGroupBudget, fetchGroupBudget, updateGroupBudget, listGroupBudgets, fetchExpenses } from '../utils/firestoreBudget';
+import { Bar } from 'react-chartjs-2';
+import { Chart, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+Chart.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+import { createGroupBudget, fetchGroupBudget, updateGroupBudget, fetchExpenses } from '../utils/firestoreBudget';
 import type { GroupBudget, BudgetCategory } from '../utils/firestoreBudget';
 
 const categoryLabels: { [key: string]: string } = {
@@ -44,13 +47,13 @@ const BudgetAnalyzer: React.FC<{ groupId?: string }> = ({ groupId }) => {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<{ expectedIncome: number; categories: Partial<BudgetCategory> }>({ expectedIncome: 0, categories: {} });
   const [expenses, setExpenses] = useState<any[]>([]);
-  const [allBudgets, setAllBudgets] = useState<GroupBudget[]>([]);
+  // Removed unused allBudgets state
 
   useEffect(() => {
     if (!groupId) return;
     fetchGroupBudget(groupId, month, year).then(setBudget);
     fetchExpenses(groupId).then(setExpenses);
-    listGroupBudgets(groupId).then(setAllBudgets);
+    // Removed listGroupBudgets call
   }, [groupId, month, year]);
 
   useEffect(() => {
@@ -98,7 +101,7 @@ const BudgetAnalyzer: React.FC<{ groupId?: string }> = ({ groupId }) => {
     }
     setEditing(false);
     fetchGroupBudget(groupId, month, year).then(setBudget);
-    listGroupBudgets(groupId).then(setAllBudgets);
+    // Removed listGroupBudgets call
   };
 
   // Calculate actuals for current month
@@ -132,6 +135,23 @@ const BudgetAnalyzer: React.FC<{ groupId?: string }> = ({ groupId }) => {
     }
   });
   const actualSavings = actualIncome - actualExpenses;
+
+  // Prepare data for bar chart
+  const chartData = budget ? {
+    labels: CATEGORY_KEYS.map(cat => categoryLabels[cat]),
+    datasets: [
+      {
+        label: 'Budgeted',
+        data: CATEGORY_KEYS.map(cat => budget.categories[cat]),
+        backgroundColor: '#3b82f6',
+      },
+      {
+        label: 'Actual',
+        data: CATEGORY_KEYS.map(cat => actuals[cat] ?? 0),
+        backgroundColor: '#22c55e',
+      },
+    ],
+  } : undefined;
 
   return (
     <div className="p-4 bg-[#23272a] rounded shadow">
@@ -204,52 +224,29 @@ const BudgetAnalyzer: React.FC<{ groupId?: string }> = ({ groupId }) => {
         <div className="mb-6 p-4 bg-[#2c3136] rounded shadow">
           <h3 className="text-lg font-bold mb-2">Budget for {month}/{year}</h3>
           <div className="mb-2 font-semibold">Expected Monthly Income: ${budget.expectedIncome}</div>
+          <div className="mb-6">
+            {chartData && <Bar data={chartData} options={{ plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#fff' } }, y: { ticks: { color: '#fff' } } } }} />}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-            {CATEGORY_KEYS.map(cat => (
-              <div key={cat} className="flex items-center gap-2">
-                <span className="w-40">{categoryLabels[cat]}:</span>
-                <span>${budget.categories[cat]}</span>
-                <span className="text-gray-400 text-xs">Actual: ${actuals[cat] ?? 0}</span>
-              </div>
-            ))}
+            {CATEGORY_KEYS.map(cat => {
+              const remaining = (budget.categories[cat] ?? 0) - (actuals[cat] ?? 0);
+              let color = 'text-green-400';
+              if (remaining <= 0) color = 'text-red-400';
+              else if (remaining <= 25) color = 'text-yellow-400';
+              return (
+                <div key={cat} className="flex items-center gap-2">
+                  <span className="w-40">{categoryLabels[cat]}:</span>
+                  <span>${budget.categories[cat]}</span>
+                  <span className={`font-semibold text-xs ${color}`}>{`$${remaining} remaining`}</span>
+                </div>
+              );
+            })}
           </div>
           <div className="mt-2 font-semibold text-green-400">Expected Savings: ${budget.expectedSavings}</div>
           <div className="mt-2 font-semibold text-blue-400">Actual Savings: ${actualSavings}</div>
           <div className="mt-2 font-semibold text-yellow-400">Net Profit/Loss: ${actualIncome - actualExpenses}</div>
         </div>
       )}
-
-      <div className="mb-4">
-        <h3 className="text-lg font-bold mb-2">Previous Budgets</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left">
-            <thead>
-              <tr className="bg-[#23272a] text-gray-300">
-                <th className="p-2">Month</th>
-                <th className="p-2">Year</th>
-                <th className="p-2">Income</th>
-                <th className="p-2">Expected Savings</th>
-                <th className="p-2">Categories</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allBudgets.filter(b => b.month !== month || b.year !== year).map(b => (
-                <tr key={b.id} className="bg-[#2c3136]">
-                  <td className="p-2">{b.month}</td>
-                  <td className="p-2">{b.year}</td>
-                  <td className="p-2">${b.expectedIncome}</td>
-                  <td className="p-2">${b.expectedSavings}</td>
-                  <td className="p-2">
-                    {CATEGORY_KEYS.map(cat => (
-                      <span key={cat} className="mr-2">{categoryLabels[cat]}: ${b.categories[cat]} </span>
-                    ))}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 };
