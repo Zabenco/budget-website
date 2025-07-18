@@ -53,34 +53,54 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
   const totalIn = filtered.filter(e => e.type === 'income').reduce((a, b) => a + b.amount, 0);
   const totalOut = filtered.filter(e => e.type === 'expense').reduce((a, b) => a + b.amount, 0);
   const net = totalIn - totalOut;
-  const people = Array.from(new Set(filtered.map(e => e.person)));
-  const perPerson = people.map(p => ({
+  const perPerson = Array.from(new Set(filtered.map(e => e.person))).map(p => ({
     name: p,
     spent: filtered.filter(e => e.person === p && e.type === 'expense').reduce((a, b) => a + b.amount, 0),
     saved: filtered.filter(e => e.person === p && e.type === 'income').reduce((a, b) => a + b.amount, 0),
   }));
 
-  // Money in/out over time
+  // Net per person per day
   const byDate = Array.from(new Set(filtered.map(e => e.date))).sort();
-  const inByDate = byDate.map(date => filtered.filter(e => e.date === date && e.type === 'income').reduce((a, b) => a + b.amount, 0));
-  const outByDate = byDate.map(date => filtered.filter(e => e.date === date && e.type === 'expense').reduce((a, b) => a + b.amount, 0));
+  const netByPersonByDate: { [person: string]: number[] } = {};
+  perPerson.forEach(({ name: person }) => {
+    netByPersonByDate[person] = byDate.map(date => {
+      const entries = filtered.filter(e => e.person === person && e.date === date);
+      const income = entries.filter(e => e.type === 'income').reduce((a, b) => a + b.amount, 0);
+      const expense = entries.filter(e => e.type === 'expense').reduce((a, b) => a + b.amount, 0);
+      return income - expense;
+    });
+  });
+  // Prepare cumulative net for each person
+  const cumulativeNetByPerson: { [person: string]: number[] } = {};
+  perPerson.forEach(({ name: person }) => {
+    let sum = 0;
+    cumulativeNetByPerson[person] = netByPersonByDate[person].map(val => (sum += val));
+  });
+  const netLineData = {
+    labels: byDate,
+    datasets: perPerson.map(({ name: person }, idx) => ({
+      label: person,
+      data: cumulativeNetByPerson[person],
+      borderColor: [
+        '#4ade80', '#f87171', '#60a5fa', '#a78bfa', '#f472b6', '#facc15', '#38bdf8', '#818cf8', '#fcd34d', '#fca5a5', '#a3e635', '#f9a8d4', '#f472b6', '#f87171'
+      ][idx % 14],
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      fill: false,
+      tension: 0.2,
+    }))
+  };
 
   // Spending by category
   const categories = Array.from(new Set(filtered.map(e => e.category)));
   const spentByCategory = categories.map(cat => filtered.filter(e => e.category === cat && e.type === 'expense').reduce((a, b) => a + b.amount, 0));
 
-  // Income per month
+  // Total spending per month
   const months = Array.from(new Set(filtered.map(e => e.date.slice(0, 7)))).sort();
-  const incomeByMonth = months.map(m => filtered.filter(e => e.date.startsWith(m) && e.type === 'income').reduce((a, b) => a + b.amount, 0));
+  const spendingByMonth = months.map(m => filtered.filter(e => e.date.startsWith(m) && e.type === 'expense').reduce((a, b) => a + b.amount, 0));
 
   // Chart data
-  const inOutData = {
-    labels: byDate,
-    datasets: [
-      { label: 'Money In', data: inByDate, backgroundColor: '#4ade80', borderColor: '#22c55e', borderWidth: 2, fill: false },
-      { label: 'Money Out', data: outByDate, backgroundColor: '#f87171', borderColor: '#ef4444', borderWidth: 2, fill: false },
-    ],
-  };
+  // Removed unused inOutData, inByDate, outByDate
   const categoryData = {
     labels: categories,
     datasets: [
@@ -96,10 +116,10 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
       { label: 'Saved', data: perPerson.map(p => p.saved), backgroundColor: '#4ade80' },
     ],
   };
-  const incomeMonthData = {
+  const spendingMonthData = {
     labels: months,
     datasets: [
-      { label: 'Income', data: incomeByMonth, backgroundColor: '#60a5fa' },
+      { label: 'Total Spending', data: spendingByMonth, backgroundColor: '#f87171' },
     ],
   };
 
@@ -139,8 +159,8 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-[#2c3136] p-4 rounded shadow">
-          <h3 className="font-bold mb-2">Money In/Out Over Time</h3>
-          <Line data={inOutData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
+          <h3 className="font-bold mb-2">Net Per Person Over Time</h3>
+          <Line data={netLineData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </div>
         <div className="bg-[#23272a] p-4 rounded shadow">
           <h3 className="font-bold mb-2">Spending by Category</h3>
@@ -151,8 +171,8 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
           <Bar data={perPersonData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </div>
         <div className="bg-[#23272a] p-4 rounded shadow">
-          <h3 className="font-bold mb-2">Income Per Month</h3>
-          <Bar data={incomeMonthData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
+          <h3 className="font-bold mb-2">Total Spending Per Month</h3>
+          <Bar data={spendingMonthData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </div>
       </div>
     </div>

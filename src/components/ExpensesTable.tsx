@@ -210,6 +210,8 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
     setOptionsOpen(optionsOpen === id ? null : id);
   };
 
+  // Sort expenses by date descending
+  const sortedExpenses = [...expenses].sort((a, b) => b.date.localeCompare(a.date));
   return (
     <div>
       <div className="p-4 bg-[#23272a] rounded shadow">
@@ -246,9 +248,9 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
               </tr>
             </thead>
             <tbody>
-              {expenses.length === 0 ? (
+              {sortedExpenses.length === 0 ? (
                 <tr><td colSpan={8} className="text-center p-2">No entries yet.</td></tr>
-              ) : expenses.map(e => (
+              ) : sortedExpenses.map(e => (
                 <tr key={e.id} className={e.type === 'income' ? 'bg-[#2c3136]' : 'bg-[#23272a]'}>
                   <td className="p-2 border">{e.date}</td>
                   <td className="p-2 border">{e.person}</td>
