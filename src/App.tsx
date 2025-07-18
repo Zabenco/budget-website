@@ -24,7 +24,7 @@ function App() {
       if (u) {
         // Try to read groupId from Firestore user profile
         try {
-          const { getFirestore, doc, getDoc, setDoc } = await import('firebase/firestore');
+          const { getFirestore, doc, getDoc } = await import('firebase/firestore');
           const db = getFirestore();
           const userDocRef = doc(db, 'users', u.uid);
           const userDocSnap = await getDoc(userDocRef);
