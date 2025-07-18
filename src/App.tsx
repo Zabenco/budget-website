@@ -9,6 +9,7 @@ import type { Expense } from './components/ExpensesTable';
 import BudgetAnalyzer from './components/BudgetAnalyzer';
 import ChartsDashboard from './components/ChartsDashboard';
 import Auth from './components/Auth';
+import type { User } from 'firebase/auth';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
