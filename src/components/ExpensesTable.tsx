@@ -113,7 +113,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
         setLoading(true);
         setError(null);
         try {
-          const expensesData = await fetchExpenses(user.uid);
+          const expensesData = await fetchExpenses(groupId);
           const goalsData = await fetchSharedGoals(groupId);
           setExpenses(expensesData);
           setGoals(goalsData);
@@ -130,7 +130,7 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
       setForm(f => ({ ...f, person: user?.displayName ?? '' }));
     }
     fetchData();
-  }, [user, setExpenses]);
+  }, [user, setExpenses, groupId]);
 
   // If not logged in or no displayName, show prompt and hide everything else
   const isAuthenticated = !!user && !!user.displayName;
@@ -183,8 +183,8 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
       category: form.category,
       notes: form.notes,
     };
-    addExpense(user.uid, expenseData).then(id => {
-      setExpenses(prev => [...prev, { ...expenseData, id }]);
+    addExpense(groupId, expenseData).then(id => {
+      setExpenses(prev => [...prev, { ...expenseData, id, groupId }]);
       setForm({ ...initialForm, person: user.displayName ?? '' });
     });
   };
