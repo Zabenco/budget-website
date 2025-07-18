@@ -98,6 +98,8 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
   const [goals, setGoals] = useState<Array<{ id: string; name: string; target: number }>>([]);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalForm, setGoalForm] = useState({ name: '', target: '' });
+  const [editGoalId, setEditGoalId] = useState<string | null>(null);
+  const [editGoalForm, setEditGoalForm] = useState<{ name: string; target: string }>({ name: '', target: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -301,20 +303,57 @@ const ExpensesTable: React.FC<ExpensesTableProps> = ({ user, expenses, setExpens
               <button className="text-gray-500 mt-2 w-full max-w-xs" type="button" onClick={() => setEditingGoal(false)}>Cancel</button>
             </form>
           )}
+          {editGoalId && (
+            <form className="flex flex-col gap-2 md:max-w-md w-full items-center mt-4" onSubmit={e => {
+              e.preventDefault();
+              if (!editGoalForm.name || !editGoalForm.target || isNaN(Number(editGoalForm.target)) || Number(editGoalForm.target) <= 0) return;
+              updateSharedGoal(editGoalId, { name: editGoalForm.name, target: Number(editGoalForm.target) }).then(() => {
+                setGoals(goals.map(g => g.id === editGoalId ? { ...g, name: editGoalForm.name, target: Number(editGoalForm.target) } : g));
+                setEditGoalId(null);
+                setEditGoalForm({ name: '', target: '' });
+              });
+            }}>
+              <input
+                name="name"
+                type="text"
+                className="border p-2 rounded w-full max-w-xs"
+                placeholder="Edit Goal Name"
+                value={editGoalForm.name}
+                onChange={e => setEditGoalForm(f => ({ ...f, name: e.target.value }))}
+                required
+              />
+              <input
+                name="target"
+                type="number"
+                step="0.01"
+                className="border p-2 rounded w-full max-w-xs"
+                placeholder="Edit Target Amount ($)"
+                value={editGoalForm.target}
+                onChange={e => setEditGoalForm(f => ({ ...f, target: e.target.value }))}
+                required
+              />
+              <button className="bg-blue-500 text-white px-4 py-2 rounded w-full max-w-xs" type="submit">Update Goal</button>
+              <button className="text-gray-500 mt-2 w-full max-w-xs" type="button" onClick={() => { setEditGoalId(null); setEditGoalForm({ name: '', target: '' }); }}>Cancel</button>
+            </form>
+          )}
           <div className="mt-6">
             {goals.length === 0 ? (
               <div className="text-center text-gray-500">No shared goals yet.</div>
             ) : (
               goals.map(goal => (
-                <SavingsGoalDisplay
-                  key={goal.id}
-                  goal={goal}
-                  expenses={expenses}
-                  onEdit={() => {/* TODO: implement edit logic */}}
-                  onDelete={() => {
-                    removeSharedGoal(goal.id).then(() => setGoals(goals.filter(g => g.id !== goal.id)));
-                  }}
-                />
+                <div key={goal.id}>
+                  <SavingsGoalDisplay
+                    goal={goal}
+                    expenses={expenses}
+                    onEdit={() => {
+                      setEditGoalId(goal.id);
+                      setEditGoalForm({ name: goal.name, target: String(goal.target) });
+                    }}
+                    onDelete={() => {
+                      removeSharedGoal(goal.id).then(() => setGoals(goals.filter(g => g.id !== goal.id)));
+                    }}
+                  />
+                </div>
               ))
             )}
           </div>
