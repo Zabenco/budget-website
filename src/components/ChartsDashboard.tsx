@@ -143,6 +143,7 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
             <div className="text-xs">{p.name}</div>
             <div className="text-sm">Spent: <span className="font-bold text-red-600">${p.spent.toFixed(2)}</span></div>
             <div className="text-sm">Saved: <span className="font-bold text-green-600">${p.saved.toFixed(2)}</span></div>
+            <div className="text-sm">Net: <span className={`font-bold ${p.saved - p.spent >= 0 ? 'text-blue-400' : 'text-yellow-400'}`}>${(p.saved - p.spent).toFixed(2)}</span></div>
           </div>
         ))}
       </div>
