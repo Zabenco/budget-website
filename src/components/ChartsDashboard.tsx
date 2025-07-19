@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { Expense } from './ExpensesTable';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { Line, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -95,9 +95,7 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
   const categories = Array.from(new Set(filtered.map(e => e.category)));
   const spentByCategory = categories.map(cat => filtered.filter(e => e.category === cat && e.type === 'expense').reduce((a, b) => a + b.amount, 0));
 
-  // Total spending per month
-  const months = Array.from(new Set(filtered.map(e => e.date.slice(0, 7)))).sort();
-  const spendingByMonth = months.map(m => filtered.filter(e => e.date.startsWith(m) && e.type === 'expense').reduce((a, b) => a + b.amount, 0));
+  // Removed unused months and spendingByMonth
 
   // Chart data
   // Removed unused inOutData, inByDate, outByDate
@@ -109,19 +107,33 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
       ] },
     ],
   };
-  const perPersonData = {
+  // Pie chart for net worth distribution
+  const netWorthPieData = {
     labels: perPerson.map(p => p.name),
     datasets: [
-      { label: 'Spent', data: perPerson.map(p => p.spent), backgroundColor: '#f87171' },
-      { label: 'Saved', data: perPerson.map(p => p.saved), backgroundColor: '#4ade80' },
+      {
+        label: 'Net Worth',
+        data: perPerson.map(p => p.saved - p.spent),
+        backgroundColor: [
+          '#4ade80', '#f87171', '#60a5fa', '#a78bfa', '#f472b6', '#facc15', '#38bdf8', '#818cf8', '#fcd34d', '#fca5a5', '#a3e635', '#f9a8d4', '#f472b6', '#f87171'
+        ],
+      },
     ],
   };
-  const spendingMonthData = {
-    labels: months,
+  // Pie chart for spending distribution
+  const spendingPieData = {
+    labels: perPerson.map(p => p.name),
     datasets: [
-      { label: 'Total Spending', data: spendingByMonth, backgroundColor: '#f87171' },
+      {
+        label: 'Spending',
+        data: perPerson.map(p => p.spent),
+        backgroundColor: [
+          '#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', '#facc15', '#38bdf8', '#818cf8', '#fcd34d', '#fca5a5', '#a3e635', '#f9a8d4', '#f472b6', '#f87171'
+        ],
+      },
     ],
   };
+  // Removed unused spendingMonthData
 
   return (
     <div className="p-4 bg-[#2c3136] rounded shadow">
@@ -174,12 +186,12 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
           <Doughnut data={categoryData} options={{ responsive: true, plugins: { legend: { position: 'right' } } }} />
         </div>
         <div className="bg-[#23272a] p-4 rounded shadow">
-          <h3 className="font-bold mb-2">Who Spends/Saves Most</h3>
-          <Bar data={perPersonData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
+          <h3 className="font-bold mb-2">Net Worth Distribution</h3>
+          <Doughnut data={netWorthPieData} options={{ responsive: true, plugins: { legend: { position: 'right' } } }} />
         </div>
         <div className="bg-[#23272a] p-4 rounded shadow">
-          <h3 className="font-bold mb-2">Total Spending Per Month</h3>
-          <Bar data={spendingMonthData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
+          <h3 className="font-bold mb-2">Spending Distribution</h3>
+          <Doughnut data={spendingPieData} options={{ responsive: true, plugins: { legend: { position: 'right' } } }} />
         </div>
       </div>
     </div>
