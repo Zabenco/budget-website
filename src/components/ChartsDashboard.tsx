@@ -126,17 +126,23 @@ const ChartsDashboard: React.FC<ChartsDashboardProps> = ({ expenses }) => {
   return (
     <div className="p-4 bg-[#2c3136] rounded shadow">
       <div className="flex flex-wrap gap-4 mb-4 justify-center">
-        <div className="bg-[#23272a] text-green-400 rounded p-4 min-w-[140px] text-center">
-          <div className="text-xs">Total In</div>
-          <div className="text-2xl font-bold">${totalIn.toFixed(2)}</div>
+        <div className="bg-[#23272a] text-green-400 rounded p-4 min-w-[140px] flex flex-col items-center justify-center text-center h-[96px]">
+          <div>
+            <div className="text-xs">Total In</div>
+            <div className="text-2xl font-bold">${totalIn.toFixed(2)}</div>
+          </div>
         </div>
-        <div className="bg-[#23272a] text-red-400 rounded p-4 min-w-[140px] text-center">
-          <div className="text-xs">Total Out</div>
-          <div className="text-2xl font-bold">${totalOut.toFixed(2)}</div>
+        <div className="bg-[#23272a] text-red-400 rounded p-4 min-w-[140px] flex flex-col items-center justify-center text-center h-[96px]">
+          <div>
+            <div className="text-xs">Total Out</div>
+            <div className="text-2xl font-bold">${totalOut.toFixed(2)}</div>
+          </div>
         </div>
-        <div className="bg-[#23272a] text-blue-400 rounded p-4 min-w-[140px] text-center">
-          <div className="text-xs">Net</div>
-          <div className="text-2xl font-bold">${net.toFixed(2)}</div>
+        <div className="bg-[#23272a] text-blue-400 rounded p-4 min-w-[140px] flex flex-col items-center justify-center text-center h-[96px]">
+          <div>
+            <div className="text-xs">Net</div>
+            <div className="text-2xl font-bold">${net.toFixed(2)}</div>
+          </div>
         </div>
         {perPerson.map(p => (
           <div key={p.name} className="bg-[#23272a] text-gray-200 rounded p-4 min-w-[140px] text-center">
